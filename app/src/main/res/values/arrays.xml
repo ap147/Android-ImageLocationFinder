@@ -12,19 +12,19 @@
     <string-array name="lat">
         <item>27.1750</item>
         <item>39.9163</item>
-        <item>27.1750</item>
-        <item>39.9163</item>
-        <item>27.1750</item>
-        <item>39.9163</item>
+        <item>48.8585</item>
+        <item>29.9792</item>
+        <item>31.6200</item>
+        <item>25.1972</item>
 
     </string-array>
     <string-array name="lng">
         <item>78.0422</item>
         <item>116.3972</item>
-        <item>78.0422</item>
-        <item>116.3972</item>
-        <item>78.0422</item>
-        <item>116.3972</item>
+        <item>31.1342</item>
+        <item>31.1342</item>
+        <item>74.8765</item>
+        <item>55.2744</item>
     </string-array>
 
 </resources>
