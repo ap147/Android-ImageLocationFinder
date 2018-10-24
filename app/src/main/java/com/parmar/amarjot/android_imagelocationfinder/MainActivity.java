@@ -2,19 +2,22 @@ package com.parmar.amarjot.android_imagelocationfinder;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-
-import static com.parmar.amarjot.android_imagelocationfinder.R.array.name;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -33,6 +36,7 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
 
         isServicesOK();
+        setupActionbar();
         setupList();
     }
 
@@ -70,6 +74,7 @@ public class MainActivity extends AppCompatActivity{
         landmarkDetails.putInt("landmarkIndex", landmarkIndex);
         intent.putExtras(landmarkDetails);
         startActivity(intent);
+        overridePendingTransition( R.anim.slide_in_right, R.anim.slide_out_right);
     }
 
     // Makes sure app can communicate with GoogleMaps
@@ -92,5 +97,13 @@ public class MainActivity extends AppCompatActivity{
             Toast.makeText(this, "You can't make map requests", Toast.LENGTH_SHORT).show();
         }
         return false;
+    }
+
+    // Sets up custom action bar with filter spinner (all, vegan, vege)
+    private void setupActionbar() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setTitleTextColor(Color.WHITE);
+
     }
 }
