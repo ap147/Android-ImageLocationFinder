@@ -2,18 +2,12 @@ package com.parmar.amarjot.android_imagelocationfinder;
 
 import android.app.Dialog;
 import android.content.Intent;
-import android.graphics.Color;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -27,8 +21,7 @@ public class MainActivity extends AppCompatActivity{
     private static final String TAG = "MainActivity";
     private static final int ERROR_DIALOG_REQUEST = 9001;
 
-    String [] landmarkNames;
-    Integer [] imageID;
+    String [] landmarkNames, landmarkImageIDs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +41,7 @@ public class MainActivity extends AppCompatActivity{
 
         //goToMaps(0);
         list= findViewById(R.id.listView);
-        CustomListview customListview = new CustomListview(this, landmarkNames, imageID);
+        CustomListview customListview = new CustomListview(this, landmarkNames, landmarkImageIDs);
         list.setAdapter(customListview);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -62,7 +55,7 @@ public class MainActivity extends AppCompatActivity{
         // Read data from string array
         // Load into array
         landmarkNames = getResources().getStringArray(R.array.name);
-
+        landmarkImageIDs = getResources().getStringArray(R.array.image);
     }
 
 
@@ -98,11 +91,4 @@ public class MainActivity extends AppCompatActivity{
         }
         return false;
     }
-
-//    // Sets up custom action bar with filter spinner (all, vegan, vege)
-//    private void setupActionbar() {
-//        Toolbar toolbar = findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
-//        toolbar.setTitleTextColor(Color.WHITE);
-//    }
 }

@@ -2,4 +2,13 @@
     <string name="app_name">Android-ImageLocationFinder</string>
 
     <string name="DistanceTitle">Distance</string>
+
+    <string name="CurrentTitle">Your Current Location</string>
+    <string name="LandmarkTitle">Landmark Location</string>
+
+    <string name="defaultLat">40.9006</string>
+    <string name="defaultLong">174.8860</string>
+
+
+    <string name="dummylandmarkDescript">The Taj Mahal is an ivory-white marble mausoleum on the south bank of the Yamuna river in the Indian city of Agra.</string>
 </resources>

@@ -2,6 +2,7 @@ package com.parmar.amarjot.android_imagelocationfinder;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -14,11 +15,11 @@ import com.mikhaellopez.circularimageview.CircularImageView;
 public class CustomListview extends ArrayAdapter <String>{
 
     private String [] recipe_title;
-    private Integer [] recipe_image_id;
+    private String [] recipe_image_id;
 
     private Activity context;
 
-    public CustomListview(@NonNull Context context, String [] _recipeName, Integer [] _recipeID) {
+    public CustomListview(@NonNull Context context, String [] _recipeName, String [] _recipeID) {
         super(context, R.layout.custom_listview_layout, _recipeName);
 
         this.context= (Activity) context;
@@ -42,8 +43,12 @@ public class CustomListview extends ArrayAdapter <String>{
             viewHolder = (ViewHolder) r.getTag();
         }
 
+        Resources resources = getContext().getResources();
+        final int resourceId = resources.getIdentifier(recipe_image_id[position], "drawable",
+                getContext().getPackageName());
+
         viewHolder.textViewName.setText(recipe_title[position]);
-        viewHolder.imageView.setImageResource(R.drawable.common_google_signin_btn_icon_dark);//recipe_image_id[position]);
+        viewHolder.imageView.setImageResource(resourceId);
 
         return r;
     }

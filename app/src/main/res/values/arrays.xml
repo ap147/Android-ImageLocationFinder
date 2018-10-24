@@ -9,6 +9,15 @@
         <item>Burj Khalifa</item>
     </string-array>
 
+    <string-array name="image">
+        <item>taj</item>
+        <item>city</item>
+        <item>eiffeltower</item>
+        <item>giza</item>
+        <item>goldentemple</item>
+        <item>burj</item>
+    </string-array>
+
     <string-array name="lat">
         <item>27.1750</item>
         <item>39.9163</item>

@@ -34,9 +34,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import static com.parmar.amarjot.android_imagelocationfinder.R.array.name;
 
-public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocationButtonClickListener,
-        GoogleMap.OnMyLocationClickListener,
-        OnMapReadyCallback {
+public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private static final int MY_LOCATION_REQUEST_CODE = 573;
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
@@ -53,47 +51,86 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
         Log.d(TAG, "onCreate: called");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
-        getLocationPermission();
+        mLocationPermissionGranted = false;
 
+        getLocationPermission();
         setupLandmarkDetails();
-        initMap();
         setupUserDistance();
+        initMap();
     }
 
     private void setupUserDistance() {
 
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            return;
-        }
-        mFusedLocationClient.getLastLocation()
-                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        Log.d(TAG, "getUserLocaiton: getLastLocation onSuccess");
-                        // Got last known location. In some rare situations this can be null.
-                        if (location != null) {
-                            // Logic to handle location object
+        if (mLocationPermissionGranted) {
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+                    PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) !=
+                    PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+            mFusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            Log.d(TAG, "getUserLocaiton: getLastLocation onSuccess");
+                            // Got last known location. In some rare situations this can be null.
+                            if (location != null & mLocationPermissionGranted) {
+                                // Logic to handle location object
 
-                            Location loc1 = new Location("");
-                            loc1.setLatitude(landmarkLat);
-                            loc1.setLongitude(landmarkLng);
+                                Location loc1 = new Location("");
+                                loc1.setLatitude(landmarkLat);
+                                loc1.setLongitude(landmarkLng);
 
-                            Location loc2 = new Location("");
-                            loc2.setLatitude(location.getLatitude());
-                            loc2.setLongitude(location.getLongitude());
+                                Location loc2 = new Location("");
+                                loc2.setLatitude(location.getLatitude());
+                                loc2.setLongitude(location.getLongitude());
 
-                            float distanceInMeters = loc1.distanceTo(loc2);
-                            TextView msgBox = findViewById(R.id.textView);
-                            msgBox.setText((int) (distanceInMeters/ 1000) + "KMs");
+                                float distanceInMeters = loc1.distanceTo(loc2);
+                                TextView msgBox = findViewById(R.id.textView);
+                                msgBox.setText((int) (distanceInMeters / 1000) + "KMs");
 
-                            Log.d(TAG, "getUserLocaiton: getLastLocation lat: " + location.getLatitude() + ", long: " + location.getLongitude());
-                        } else {
-                            Log.d(TAG, "getUserLocaiton: getLastLocation failed to get location");
+                                TextView currentLocation = findViewById(R.id.textViewcurrentLocation);
+                                currentLocation.setText( loc2.getLatitude() + ", " + loc2.getLongitude());
+
+                                Log.d(TAG, "getUserLocaiton: getLastLocation lat: " + location.getLatitude() + ", long: " + location.getLongitude());
+                            }
+                            else {
+                                Log.d(TAG, "getUserLocaiton: getLastLocation failed to get location");
+
+
+                                Location loc1 = new Location("");
+                                loc1.setLatitude(landmarkLat);
+                                loc1.setLongitude(landmarkLng);
+
+                                Location loc2 = new Location("");
+                                loc2.setLatitude(R.string.defaultLat);
+                                loc2.setLongitude(R.string.defaultLong);
+
+                                float distanceInMeters = loc1.distanceTo(loc2);
+                                TextView msgBox = findViewById(R.id.textView);
+                                msgBox.setText((int) (distanceInMeters / 1000) + "KMs");
+
+                                TextView currentLocation = findViewById(R.id.textViewcurrentLocation);
+                                currentLocation.setText( loc2.getLatitude() + ", " + loc2.getLongitude());
+                            }
                         }
-                    }
-                });
+                    });
+        }
+        else
+        {
+            Location loc1 = new Location("");
+            loc1.setLatitude(landmarkLat);
+            loc1.setLongitude(landmarkLng);
+
+            Location loc2 = new Location("");
+            loc2.setLatitude(R.string.defaultLat);
+            loc2.setLongitude(R.string.defaultLong);
+
+            float distanceInMeters = loc1.distanceTo(loc2);
+            TextView msgBox = findViewById(R.id.textView);
+            msgBox.setText((int) (distanceInMeters/ 1000) + "KMs");
+        }
+
     }
 
     private void setupLandmarkDetails(){
@@ -107,38 +144,33 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
         landmarkName = names[landmarkIndex];
         landmarkLat = Double.parseDouble(lats[landmarkIndex]);
         landmarkLng = Double.parseDouble(lngs[landmarkIndex]);
+
+        TextView textViewLandmark = findViewById(R.id.textViewLandmarkLocation);
+        textViewLandmark.setText(landmarkLat + ", " + landmarkLng );
     }
 
     private void initMap() {
         Log.d(TAG, "initMap: called");
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            Log.d(TAG, "initMap: asking for permissioin");
-            String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION};
-            ActivityCompat.requestPermissions(this, permissions, MY_LOCATION_REQUEST_CODE);
-            return;
+        if (mLocationPermissionGranted) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+
+            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.map);
+            mapFragment.getMapAsync(this);
         }
-
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-
     }
 
     private void getLocationPermission() {
         Log.d(TAG, "getLocationPermission: called");
         String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION};
-
+        mLocationPermissionGranted = false;
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(), FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             if (ContextCompat.checkSelfPermission(this.getApplicationContext(), COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 Log.d(TAG, "getLocationPermission: permissioin granted");
@@ -158,35 +190,19 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
         Log.d(TAG, "onMapReady: called");
         mMap = googleMap;
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-
         LatLng sydney = new LatLng(landmarkLat, landmarkLng);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
-        mMap.setMyLocationEnabled(true);
-        mMap.setOnMyLocationButtonClickListener(this);
-        mMap.setOnMyLocationClickListener(this);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
     }
 
-    @Override
-    public void onMyLocationClick(@NonNull Location location) {
-        Toast.makeText(this, "Current location:\n" + location, Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public boolean onMyLocationButtonClick() {
-        Toast.makeText(this, "MyLocation button clicked", Toast.LENGTH_SHORT).show();
-        // Return false so that we don't consume the event and the default behavior still occurs
-        // (the camera animates to the user's current position).
-        return false;
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        Log.d(TAG, "onRequestPermissionsResult: called");
+        Log.d(TAG, ": called");
         mLocationPermissionGranted = false;
 
         switch (requestCode) {
@@ -195,8 +211,6 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
                     for (int i = 0; i < grantResults.length; i++) {
                         if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
                             mLocationPermissionGranted = true;
-                            initMap();
-
                             return;
                         }
                         Log.d(TAG, "onRequestPermissionsResult: Location permission granted");
