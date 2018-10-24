@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="name">
+        <item>Taj Mahal</item>
+        <item>Forbidden City</item>
+        <item>Eiffel Tower</item>
+        <item>Great Pyramid of Giza</item>
+        <item>Golden Temple</item>
+        <item>Burj Khalifa</item>
+    </string-array>
+
+    <string-array name="lat">
+        <item>27.1750</item>
+        <item>39.9163</item>
+        <item>27.1750</item>
+        <item>39.9163</item>
+        <item>27.1750</item>
+        <item>39.9163</item>
+
+    </string-array>
+    <string-array name="lng">
+        <item>78.0422</item>
+        <item>116.3972</item>
+    </string-array>
+
+</resources>
