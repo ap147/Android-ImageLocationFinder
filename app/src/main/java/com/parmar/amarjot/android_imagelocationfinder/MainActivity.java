@@ -24,8 +24,8 @@ public class MainActivity extends AppCompatActivity{
     private static final String TAG = "MainActivity";
     private static final int ERROR_DIALOG_REQUEST = 9001;
 
-    String [] landmarkNames = new String[2];
-    Integer [] imageID = new Integer[2];
+    String [] landmarkNames;
+    Integer [] imageID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +63,12 @@ public class MainActivity extends AppCompatActivity{
 
 
     public void goToMaps(int landmarkIndex){
+        Log.d(TAG, "goToMaps: called");
         Intent intent = new Intent(this, MapActivity.class);
+
+        Bundle landmarkDetails = new Bundle();
+        landmarkDetails.putInt("landmarkIndex", landmarkIndex);
+        intent.putExtras(landmarkDetails);
         startActivity(intent);
     }
 

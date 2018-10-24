@@ -1,6 +1,7 @@
 package com.parmar.amarjot.android_imagelocationfinder;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -11,29 +12,23 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
-import android.util.AttributeSet;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 
-import java.util.Map;
+
+import static com.parmar.amarjot.android_imagelocationfinder.R.array.name;
 
 public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocationButtonClickListener,
         GoogleMap.OnMyLocationClickListener,
@@ -47,6 +42,10 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
     private FusedLocationProviderClient mFusedLocationClient;
     GoogleMap mMap;
 
+    String landmarkName;
+    Double lat;
+    Double lng;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate: called");
@@ -54,7 +53,23 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
         setContentView(R.layout.activity_map);
         getLocationPermission();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        //initMap();
+        setupLandmarkDetails();
+        initMap();
+    }
+
+    private void setupLandmarkDetails(){
+        Log.d(TAG, "setupLandmarkDetails: called");
+        int landmarkIndex = getIntent().getExtras().getInt("landmarkIndex");
+
+        String names [] = getResources().getStringArray(R.array.name);
+        String[] lats  = getResources().getStringArray(R.array.lat);
+        String[] lngs  = getResources().getStringArray(R.array.lng);
+
+        landmarkName = names[landmarkIndex];
+        lat = Double.parseDouble(lats[landmarkIndex]);
+        lng = Double.parseDouble(lngs[landmarkIndex]);
+
+        Log.d(TAG, "setupLandmarkDetails: lat: "+ lat);
     }
 
     private void initMap() {
@@ -72,6 +87,10 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
+            Log.d(TAG, "initMap: asking for permissioin");
+            String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION};
+            ActivityCompat.requestPermissions(this, permissions, MY_LOCATION_REQUEST_CODE);
             return;
         }
         mFusedLocationClient.getLastLocation()
@@ -116,16 +135,16 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
         Log.d(TAG, "onMapReady: called");
         mMap = googleMap;
 
+        LatLng sydney = new LatLng(lat, lng);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        Log.d(TAG, "onMapReady: lat: " + lat);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
             mMap.setOnMyLocationButtonClickListener(this);
             mMap.setOnMyLocationClickListener(this);
             return;
         }
-
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 
     @Override
