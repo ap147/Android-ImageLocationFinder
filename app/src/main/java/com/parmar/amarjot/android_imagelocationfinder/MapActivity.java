@@ -57,7 +57,6 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
 
         setupLandmarkDetails();
         initMap();
-
         setupUserDistance();
     }
 
@@ -87,7 +86,7 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
 
                             float distanceInMeters = loc1.distanceTo(loc2);
                             TextView msgBox = findViewById(R.id.textView);
-                            msgBox.setText("You are " + distanceInMeters + " away from this landmark");
+                            msgBox.setText((int) (distanceInMeters/ 1000) + "KMs");
 
                             Log.d(TAG, "getUserLocaiton: getLastLocation lat: " + location.getLatitude() + ", long: " + location.getLongitude());
                         } else {
@@ -112,10 +111,6 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
 
     private void initMap() {
         Log.d(TAG, "initMap: called");
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -131,6 +126,12 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
             ActivityCompat.requestPermissions(this, permissions, MY_LOCATION_REQUEST_CODE);
             return;
         }
+
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
     }
 
     private void getLocationPermission() {
@@ -157,16 +158,17 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
         Log.d(TAG, "onMapReady: called");
         mMap = googleMap;
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
         LatLng sydney = new LatLng(landmarkLat, landmarkLng);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            mMap.setMyLocationEnabled(true);
-            mMap.setOnMyLocationButtonClickListener(this);
-            mMap.setOnMyLocationClickListener(this);
-            return;
-        }
+        mMap.setMyLocationEnabled(true);
+        mMap.setOnMyLocationButtonClickListener(this);
+        mMap.setOnMyLocationClickListener(this);
     }
 
     @Override
