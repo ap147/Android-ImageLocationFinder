@@ -17,6 +17,8 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -43,10 +45,8 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
     boolean mLocationPermissionGranted;
     private FusedLocationProviderClient mFusedLocationClient;
     GoogleMap mMap;
-
     String landmarkName;
-    Double lat;
-    Double lng;
+    Double landmarkLat, landmarkLng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,9 +54,47 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
         getLocationPermission();
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
         setupLandmarkDetails();
         initMap();
+
+        setupUserDistance();
+    }
+
+    private void setupUserDistance() {
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            return;
+        }
+        mFusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        Log.d(TAG, "getUserLocaiton: getLastLocation onSuccess");
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            // Logic to handle location object
+
+                            Location loc1 = new Location("");
+                            loc1.setLatitude(landmarkLat);
+                            loc1.setLongitude(landmarkLng);
+
+                            Location loc2 = new Location("");
+                            loc2.setLatitude(location.getLatitude());
+                            loc2.setLongitude(location.getLongitude());
+
+                            float distanceInMeters = loc1.distanceTo(loc2);
+                            TextView msgBox = findViewById(R.id.textView);
+                            msgBox.setText("You are " + distanceInMeters + " away from this landmark");
+
+                            Log.d(TAG, "getUserLocaiton: getLastLocation lat: " + location.getLatitude() + ", long: " + location.getLongitude());
+                        } else {
+                            Log.d(TAG, "getUserLocaiton: getLastLocation failed to get location");
+                        }
+                    }
+                });
     }
 
     private void setupLandmarkDetails(){
@@ -68,10 +106,8 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
         String[] lngs  = getResources().getStringArray(R.array.lng);
 
         landmarkName = names[landmarkIndex];
-        lat = Double.parseDouble(lats[landmarkIndex]);
-        lng = Double.parseDouble(lngs[landmarkIndex]);
-
-        Log.d(TAG, "setupLandmarkDetails: lat: "+ lat);
+        landmarkLat = Double.parseDouble(lats[landmarkIndex]);
+        landmarkLng = Double.parseDouble(lngs[landmarkIndex]);
     }
 
     private void initMap() {
@@ -95,22 +131,6 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
             ActivityCompat.requestPermissions(this, permissions, MY_LOCATION_REQUEST_CODE);
             return;
         }
-//        mFusedLocationClient.getLastLocation()
-//                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-//                    @Override
-//                    public void onSuccess(Location location) {
-//                        Log.d(TAG, "initMap: getLastLocation onSuccess");
-//                        // Got last known location. In some rare situations this can be null.
-//                        if (location != null) {
-//                            // Logic to handle location object
-//                            LatLng sydney = new LatLng(location.getLatitude(), location.getLongitude());
-//                            mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in NZ"));
-//                            mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-//
-//                            Log.d(TAG, "initMap: getLastLocation lat: " + location.getLatitude() + ", long: " + location.getLongitude());
-//                        }
-//                    }
-//                });
     }
 
     private void getLocationPermission() {
@@ -137,11 +157,10 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
         Log.d(TAG, "onMapReady: called");
         mMap = googleMap;
 
-        LatLng sydney = new LatLng(lat, lng);
+        LatLng sydney = new LatLng(landmarkLat, landmarkLng);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
-        Log.d(TAG, "onMapReady: lat: " + lat);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
             mMap.setOnMyLocationButtonClickListener(this);
