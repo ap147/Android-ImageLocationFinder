@@ -1,23 +1,20 @@
 package com.parmar.amarjot.android_imagelocationfinder;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.widget.EditText;
+
+import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,9 +29,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 
-import static com.parmar.amarjot.android_imagelocationfinder.R.array.name;
-
-public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final int MY_LOCATION_REQUEST_CODE = 573;
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
@@ -57,6 +52,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         setupLandmarkDetails();
         setupUserDistance();
         initMap();
+        setupActionbar();
     }
 
     private void setupUserDistance() {
@@ -225,5 +221,28 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         super.onBackPressed();
         MapActivity.this.overridePendingTransition(R.anim.slide_out_left,
                 R.anim.slide_in_left);
+    }
+
+    // Sets up custom action bar with back button & landmark title
+    private void setupActionbar() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle(landmarkName);
+        setSupportActionBar(toolbar);
+        toolbar.setTitleTextColor(Color.WHITE);
+
+        ActionBar actionbar = getSupportActionBar();
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24px);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                overridePendingTransition(R.anim.slide_out_left, R.anim.slide_in_left);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
