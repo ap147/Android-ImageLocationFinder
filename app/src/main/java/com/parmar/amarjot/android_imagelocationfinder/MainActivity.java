@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
 
         isServicesOK();
-        setupActionbar();
+        //setupActionbar();
         setupList();
     }
 
@@ -99,11 +99,10 @@ public class MainActivity extends AppCompatActivity{
         return false;
     }
 
-    // Sets up custom action bar with filter spinner (all, vegan, vege)
-    private void setupActionbar() {
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setTitleTextColor(Color.WHITE);
-
-    }
+//    // Sets up custom action bar with filter spinner (all, vegan, vege)
+//    private void setupActionbar() {
+//        Toolbar toolbar = findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
+//        toolbar.setTitleTextColor(Color.WHITE);
+//    }
 }

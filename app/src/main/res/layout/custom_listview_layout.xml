@@ -30,7 +30,6 @@
                 android:id="@+id/textTitle"
                 android:layout_width="215dp"
                 android:layout_height="wrap_content"
-                android:layout_alignStart="@+id/textDescription"
                 android:fontFamily="sans-serif"
                 android:text="TextView"
                 android:textColor="@color/colorSecondary"

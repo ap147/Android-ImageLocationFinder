@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -14,6 +15,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -93,22 +95,22 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
             ActivityCompat.requestPermissions(this, permissions, MY_LOCATION_REQUEST_CODE);
             return;
         }
-        mFusedLocationClient.getLastLocation()
-                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        Log.d(TAG, "initMap: getLastLocation onSuccess");
-                        // Got last known location. In some rare situations this can be null.
-                        if (location != null) {
-                            // Logic to handle location object
-                            LatLng sydney = new LatLng(location.getLatitude(), location.getLongitude());
-                            mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in NZ"));
-                            mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-
-                            Log.d(TAG, "initMap: getLastLocation lat: " + location.getLatitude() + ", long: " + location.getLongitude());
-                        }
-                    }
-                });
+//        mFusedLocationClient.getLastLocation()
+//                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+//                    @Override
+//                    public void onSuccess(Location location) {
+//                        Log.d(TAG, "initMap: getLastLocation onSuccess");
+//                        // Got last known location. In some rare situations this can be null.
+//                        if (location != null) {
+//                            // Logic to handle location object
+//                            LatLng sydney = new LatLng(location.getLatitude(), location.getLongitude());
+//                            mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in NZ"));
+//                            mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+//
+//                            Log.d(TAG, "initMap: getLastLocation lat: " + location.getLatitude() + ", long: " + location.getLongitude());
+//                        }
+//                    }
+//                });
     }
 
     private void getLocationPermission() {
@@ -138,6 +140,7 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
         LatLng sydney = new LatLng(lat, lng);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
         Log.d(TAG, "onMapReady: lat: " + lat);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
@@ -180,5 +183,12 @@ public class MapActivity extends FragmentActivity implements GoogleMap.OnMyLocat
                 }
             }
         }
+    }
+    @Override
+    public void onBackPressed() {
+        // TODO Auto-generated method stub
+        super.onBackPressed();
+        MapActivity.this.overridePendingTransition(R.anim.slide_out_left,
+                R.anim.slide_in_left);
     }
 }
