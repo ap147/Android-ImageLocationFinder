@@ -2,6 +2,7 @@ package com.parmar.amarjot.android_imagelocationfinder;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
+import android.support.v7.widget.Toolbar;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -31,6 +33,7 @@ public class MainActivity extends AppCompatActivity{
         isServicesOK();
         //setupActionbar();
         setupList();
+        setupActionbar();
     }
 
     private void setupList() {
@@ -90,5 +93,12 @@ public class MainActivity extends AppCompatActivity{
             Toast.makeText(this, "You can't make map requests", Toast.LENGTH_SHORT).show();
         }
         return false;
+    }
+
+    // Sets up custom action bar with filter spinner (all, vegan, vege)
+    private void setupActionbar() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setTitleTextColor(Color.WHITE);
     }
 }
