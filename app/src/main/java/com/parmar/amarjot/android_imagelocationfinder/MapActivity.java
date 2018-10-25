@@ -9,8 +9,8 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
@@ -18,7 +18,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,7 +33,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener, GoogleMap.OnMyLocationClickListener {
 
     private static final int MY_LOCATION_REQUEST_CODE = 573;
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
@@ -56,12 +55,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void init(){
-        checkLocationServices();
+
+        // check if app has perms
         getLocationPermission();
-        setupLandmarkDetails();
-        setupActionbar();
-        calculateUserDistance();
-        initMap();
+
+        if(!mLocationPermissionGranted) {
+            setupLandmarkDetails();
+            setupActionbar();
+            calculateUserDistance();
+            initMap();
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -97,7 +100,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             }
                             else {
                                 Log.d(TAG, "getUserLocaiton: getLastLocation failed to get location");
-
 
                                 Location loc1 = new Location("");
                                 loc1.setLatitude(landmarkLat);
@@ -139,7 +141,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             TextView currentLocation = findViewById(R.id.textViewcurrentLocation);
             currentLocation.setText( loc2.getLatitude() + ", " + loc2.getLongitude());
         }
-
     }
 
     private void setupLandmarkDetails(){
@@ -175,6 +176,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             if (ContextCompat.checkSelfPermission(this.getApplicationContext(), COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 Log.d(TAG, "getLocationPermission: permissioin granted");
                 mLocationPermissionGranted = true;
+                // check if gps on
+                checkLocationServices();
+                setupLandmarkDetails();
+                setupActionbar();
+                calculateUserDistance();
+                initMap();
+
             } else {
                 Log.d(TAG, "getLocationPermission: asking for permissioin");
                 ActivityCompat.requestPermissions(this, permissions, MY_LOCATION_REQUEST_CODE);
@@ -185,15 +193,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onMapReady(GoogleMap googleMap) {
         Log.d(TAG, "onMapReady: called");
 
         mMap = googleMap;
         LatLng sydney = new LatLng(landmarkLat, landmarkLng);
-        Log.d(TAG, "onMapReady: called: " + landmarkLat);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
+        if(mLocationPermissionGranted) {
+            mMap.setMyLocationEnabled(true);
+            mMap.setOnMyLocationButtonClickListener(this);
+            mMap.setOnMyLocationClickListener(this);
+        }
     }
 
 
@@ -208,6 +222,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     for (int i = 0; i < grantResults.length; i++) {
                         if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
                             mLocationPermissionGranted = true;
+                            // check if gps on
+                            checkLocationServices();
                             setupLandmarkDetails();
                             calculateUserDistance();
                             initMap();
@@ -292,5 +308,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onBackPressed();
         MapActivity.this.overridePendingTransition(R.anim.slide_out_left,
                 R.anim.slide_in_left);
+    }
+
+    @Override
+    public boolean onMyLocationButtonClick() {
+        Log.d(TAG, "onMyLocationButtonClick called");
+        return false;
+    }
+
+    @Override
+    public void onMyLocationClick(@NonNull Location location) {
+        Log.d(TAG, "onMyLocationClick called");
     }
 }
