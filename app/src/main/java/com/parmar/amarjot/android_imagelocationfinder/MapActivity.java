@@ -56,12 +56,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void init(){
+
+        // check if gps on
         checkLocationServices();
+        // check if app has perms
         getLocationPermission();
-        setupLandmarkDetails();
-        setupActionbar();
-        calculateUserDistance();
-        initMap();
+
+        if(!mLocationPermissionGranted) {
+            setupLandmarkDetails();
+            setupActionbar();
+            calculateUserDistance();
+            initMap();
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -139,7 +145,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             TextView currentLocation = findViewById(R.id.textViewcurrentLocation);
             currentLocation.setText( loc2.getLatitude() + ", " + loc2.getLongitude());
         }
-
     }
 
     private void setupLandmarkDetails(){
@@ -175,6 +180,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             if (ContextCompat.checkSelfPermission(this.getApplicationContext(), COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 Log.d(TAG, "getLocationPermission: permissioin granted");
                 mLocationPermissionGranted = true;
+                setupLandmarkDetails();
+                setupActionbar();
+                calculateUserDistance();
+                initMap();
+
             } else {
                 Log.d(TAG, "getLocationPermission: asking for permissioin");
                 ActivityCompat.requestPermissions(this, permissions, MY_LOCATION_REQUEST_CODE);
