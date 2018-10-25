@@ -1,6 +1,7 @@
 package com.parmar.amarjot.android_imagelocationfinder;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -20,6 +21,7 @@ import android.util.Log;
 
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -50,25 +52,23 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
         mLocationPermissionGranted = false;
-
-        checkLocationServices();
-
-        getLocationPermission();
-        setupLandmarkDetails();
-        setupUserDistance();
-        initMap();
-        setupActionbar();
+        init();
     }
 
-    private void setupUserDistance() {
+    private void init(){
+        checkLocationServices();
+        getLocationPermission();
+        setupLandmarkDetails();
+        setupActionbar();
+        calculateUserDistance();
+        initMap();
+    }
+
+    @SuppressLint("MissingPermission")
+    private void calculateUserDistance() {
 
         if (mLocationPermissionGranted) {
             mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
-                    PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) !=
-                    PackageManager.PERMISSION_GRANTED) {
-                return;
-            }
             mFusedLocationClient.getLastLocation()
                     .addOnSuccessListener(this, new OnSuccessListener<Location>() {
                         @Override
@@ -104,8 +104,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                 loc1.setLongitude(landmarkLng);
 
                                 Location loc2 = new Location("");
-                                loc2.setLatitude(R.string.defaultLat);
-                                loc2.setLongitude(R.string.defaultLong);
+                                Double lat = Double.parseDouble(getString(R.string.defaultLat));
+                                Double lng = Double.parseDouble(getString(R.string.defaultLong));
+                                loc2.setLatitude(lat);
+                                loc2.setLongitude(lng);
+
 
                                 float distanceInMeters = loc1.distanceTo(loc2);
                                 TextView msgBox = findViewById(R.id.textView);
@@ -117,19 +120,24 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         }
                     });
         }
-        else
-        {
+        else {
+
             Location loc1 = new Location("");
             loc1.setLatitude(landmarkLat);
             loc1.setLongitude(landmarkLng);
 
             Location loc2 = new Location("");
-            loc2.setLatitude(R.string.defaultLat);
-            loc2.setLongitude(R.string.defaultLong);
+            Double lat = Double.parseDouble(getString(R.string.defaultLat));
+            Double lng = Double.parseDouble(getString(R.string.defaultLong));
+            loc2.setLatitude(lat);
+            loc2.setLongitude(lng);
 
             float distanceInMeters = loc1.distanceTo(loc2);
             TextView msgBox = findViewById(R.id.textView);
             msgBox.setText((int) (distanceInMeters/ 1000) + "KMs");
+
+            TextView currentLocation = findViewById(R.id.textViewcurrentLocation);
+            currentLocation.setText( loc2.getLatitude() + ", " + loc2.getLongitude());
         }
 
     }
@@ -153,18 +161,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void initMap() {
         Log.d(TAG, "initMap: called");
 
-        if (mLocationPermissionGranted) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
-                return;
-            }
-
-            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.map);
-            mapFragment.getMapAsync(this);
-        }
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
     }
 
     private void getLocationPermission() {
@@ -192,6 +191,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         mMap = googleMap;
         LatLng sydney = new LatLng(landmarkLat, landmarkLng);
+        Log.d(TAG, "onMapReady: called: " + landmarkLat);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
@@ -209,7 +209,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
                             mLocationPermissionGranted = true;
                             setupLandmarkDetails();
-                            setupUserDistance();
+                            calculateUserDistance();
                             initMap();
                             setupActionbar();
                             Log.d(TAG, "onRequestPermissionsResult: Location permission granted");
@@ -218,6 +218,48 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     }
                 }
             }
+        }
+    }
+
+    // Checks if user has location services turned on,
+    // if not asks to turn it on
+    // shoutout: https://stackoverflow.com/questions/10311834/how-to-check-if-location-services-are-enabled
+    private void checkLocationServices(){
+        LocationManager lm = (LocationManager)getSystemService(this.LOCATION_SERVICE);
+        boolean gps_enabled = false;
+        boolean network_enabled = false;
+
+        try {
+            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        } catch(Exception ex) {}
+
+        try {
+            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch(Exception ex) {}
+
+        if(!gps_enabled && !network_enabled) {
+            // notify user
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+            dialog.setMessage(getResources().getString(R.string.gps_network_not_enabled));
+            dialog.setPositiveButton(getResources().getString(R.string.open_location_settings), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                    // TODO Auto-generated method stub
+                    Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(myIntent);
+                    //get gps
+                }
+            });
+            dialog.setNegativeButton(getString(R.string.Cancel), new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                    // TODO Auto-generated method stub
+                    Toast.makeText(MapActivity.this, "Your location is set to default " +
+                            "location (NZ), it will be used to calculate distance", Toast.LENGTH_SHORT).show();
+                }
+            });
+            dialog.show();
         }
     }
 
@@ -250,43 +292,5 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onBackPressed();
         MapActivity.this.overridePendingTransition(R.anim.slide_out_left,
                 R.anim.slide_in_left);
-    }
-
-    private void checkLocationServices(){
-        LocationManager lm = (LocationManager)getSystemService(this.LOCATION_SERVICE);
-        boolean gps_enabled = false;
-        boolean network_enabled = false;
-
-        try {
-            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        } catch(Exception ex) {}
-
-        try {
-            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-        } catch(Exception ex) {}
-
-        if(!gps_enabled && !network_enabled) {
-            // notify user
-            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-            dialog.setMessage(getResources().getString(R.string.gps_network_not_enabled));
-            dialog.setPositiveButton(getResources().getString(R.string.open_location_settings), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                    // TODO Auto-generated method stub
-                    Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                    startActivity(myIntent);
-                    //get gps
-                }
-            });
-            dialog.setNegativeButton(getString(R.string.Cancel), new DialogInterface.OnClickListener() {
-
-                @Override
-                public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                    // TODO Auto-generated method stub
-
-                }
-            });
-            dialog.show();
-        }
     }
 }
