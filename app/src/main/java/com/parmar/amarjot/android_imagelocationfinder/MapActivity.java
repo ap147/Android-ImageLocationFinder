@@ -1,22 +1,25 @@
 package com.parmar.amarjot.android_imagelocationfinder;
 
 import android.Manifest;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 
 import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -47,6 +50,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
         mLocationPermissionGranted = false;
+
+        checkLocationServices();
 
         getLocationPermission();
         setupLandmarkDetails();
@@ -83,7 +88,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                                 float distanceInMeters = loc1.distanceTo(loc2);
                                 TextView msgBox = findViewById(R.id.textView);
-                                msgBox.setText((int) (distanceInMeters / 1000) + "KMs");
+                                msgBox.setText((int) (distanceInMeters / 1000) + " KMs");
 
                                 TextView currentLocation = findViewById(R.id.textViewcurrentLocation);
                                 currentLocation.setText( loc2.getLatitude() + ", " + loc2.getLongitude());
@@ -184,43 +189,36 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         Log.d(TAG, "onMapReady: called");
-        mMap = googleMap;
 
+        mMap = googleMap;
         LatLng sydney = new LatLng(landmarkLat, landmarkLng);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
     }
 
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        Log.d(TAG, ": called");
+        Log.d(TAG, "onRequestPermissionsResult called");
         mLocationPermissionGranted = false;
 
         switch (requestCode) {
             case MY_LOCATION_REQUEST_CODE: {
                 if (grantResults.length > 0) {
                     for (int i = 0; i < grantResults.length; i++) {
-                        if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                        if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
                             mLocationPermissionGranted = true;
+                            setupLandmarkDetails();
+                            setupUserDistance();
+                            initMap();
+                            setupActionbar();
+                            Log.d(TAG, "onRequestPermissionsResult: Location permission granted");
                             return;
                         }
-                        Log.d(TAG, "onRequestPermissionsResult: Location permission granted");
                     }
                 }
             }
         }
-    }
-    @Override
-    public void onBackPressed() {
-        // TODO Auto-generated method stub
-        super.onBackPressed();
-        MapActivity.this.overridePendingTransition(R.anim.slide_out_left,
-                R.anim.slide_in_left);
     }
 
     // Sets up custom action bar with back button & landmark title
@@ -244,5 +242,51 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        // TODO Auto-generated method stub
+        super.onBackPressed();
+        MapActivity.this.overridePendingTransition(R.anim.slide_out_left,
+                R.anim.slide_in_left);
+    }
+
+    private void checkLocationServices(){
+        LocationManager lm = (LocationManager)getSystemService(this.LOCATION_SERVICE);
+        boolean gps_enabled = false;
+        boolean network_enabled = false;
+
+        try {
+            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        } catch(Exception ex) {}
+
+        try {
+            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch(Exception ex) {}
+
+        if(!gps_enabled && !network_enabled) {
+            // notify user
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+            dialog.setMessage(getResources().getString(R.string.gps_network_not_enabled));
+            dialog.setPositiveButton(getResources().getString(R.string.open_location_settings), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                    // TODO Auto-generated method stub
+                    Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(myIntent);
+                    //get gps
+                }
+            });
+            dialog.setNegativeButton(getString(R.string.Cancel), new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                    // TODO Auto-generated method stub
+
+                }
+            });
+            dialog.show();
+        }
     }
 }

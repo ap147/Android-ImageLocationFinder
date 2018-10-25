@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Worlds Wonders</string>
+    <string name="app_name">Landmarks</string>
 
     <string name="DistanceTitle">Distance</string>
 
@@ -11,4 +11,7 @@
 
 
     <string name="dummylandmarkDescript">The Taj Mahal is an ivory-white marble mausoleum on the south bank of the Yamuna river in the Indian city of Agra.</string>
+    <string name="gps_network_not_enabled">Your Location services are turned off</string>
+    <string name="open_location_settings">Turn on Location services</string>
+    <string name="Cancel">Cancel</string>
 </resources>
